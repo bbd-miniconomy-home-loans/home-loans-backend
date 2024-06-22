@@ -1,0 +1,39 @@
+[package]
+name = "web-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# -- App Libs
+lib-utils = { path = "../../libs/lib-utils" }
+lib-mq = { path = "../../libs/lib-mq" }
+
+# -- Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# -- Async
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+
+# -- Json
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"
+serde_with = "3"
+
+# -- Web
+axum = { version = "0.7", features = ["macros"] }
+axum-extra = { version = "0.9.3", features = ["typed-header"] }
+axum-server = { version = "0.6", features = ["tls-rustls"] }
+tower-http = { version = "0.5", features = ["fs", "cors", "trace"] }
+
+# -- Env
+dotenvy = "0.15.7"
+
+# --Aide - docs
+aide = { version = "0.13.4", features = ["axum", "scalar"] }
+schemars = "0.8.19"
+axum-typed-routing = { version = "0.2.1", features = ["aide"] }
+uuid = { version = "1.8.0", features = ["v4"] }
+time = "0.3.36"
+thiserror = "1.0.61"

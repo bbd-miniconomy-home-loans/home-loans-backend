@@ -1,0 +1,55 @@
+[workspace.lints.rust]
+unsafe_code = "forbid"
+unused = "allow"
+
+[workspace]
+resolver = "2"
+members = [
+    #    -- Application Services
+    "services/web-server",
+    #    -- Application Libraries
+    "libs/lib-utils",
+    "libs/lib-mq", "libs/lib-cron"]
+
+[workspace.dependencies]
+derive_more = { version = "1.0.0-beta", features = ["from", "display"] }
+
+#[package]
+#name = "message_queue_testing"
+#version = "0.1.0"
+#edition = "2021"
+#
+#[dependencies]
+## -- App Libs
+#lib-utils = { path = "../../libs/lib-utils" }
+#
+#
+## -- Async
+#tokio = { version = "1.38.0", features = ["full"] }
+#futures = "0.3.30"
+#
+## -- Json
+#serde = { version = "1.0.203", features = ["derive"] }
+#serde_json = "1.0.117"
+#
+## -- RabbitMQ - compat
+#amqprs = "1.6.2"
+#
+## -- Tracing
+#tracing = "0.1.40"
+#tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+#
+## -- Env
+#dotenvy = "0.15.7"
+#
+## --Aide - docs
+#aide = { version = "0.13.4", features = ["axum", "scalar"] }
+#schemars = "0.8.19"
+#axum-typed-routing = { version = "0.2.1", features = ["aide"] }
+#
+#
+## -- Web
+#axum = { version = "0.7", features = ["macros"] }
+#axum-extra = { version = "0.9.3", features = ["typed-header"] }
+#axum-server = { version = "0.6", features = ["tls-rustls"] }
+#tower-http = { version = "0.5", features = ["fs", "cors", "trace"] }

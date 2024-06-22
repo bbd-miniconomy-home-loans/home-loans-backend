@@ -1,0 +1,21 @@
+[package]
+name = "lib-mq"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lib-utils = { path = "../../libs/lib-utils" }
+# -- RabbitMQ compat client
+amqprs = { version = "1.6.2" }
+
+# -- Error wrapper
+thiserror = "1.0.61"
+
+# -- GUID
+uuid = { version = "1.8.0", features = ["v4", "serde"] }
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = "1.0.117"
+
+[lints]
+workspace = true
+
