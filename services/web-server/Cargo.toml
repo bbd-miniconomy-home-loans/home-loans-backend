@@ -26,6 +26,7 @@ axum = { version = "0.7", features = ["macros"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
 axum-server = { version = "0.6", features = ["tls-rustls"] }
 tower-http = { version = "0.5", features = ["fs", "cors", "trace"] }
+validator = { version = "0.18.1", features = ["derive"] }
 
 # -- Env
 dotenvy = "0.15.7"
@@ -34,6 +35,16 @@ dotenvy = "0.15.7"
 aide = { version = "0.13.4", features = ["axum", "scalar"] }
 schemars = "0.8.19"
 axum-typed-routing = { version = "0.2.1", features = ["aide"] }
+
+# --Util stuff
 uuid = { version = "1.8.0", features = ["v4"] }
 time = "0.3.36"
+
+# -- Errors
 thiserror = "1.0.61"
+
+
+[dev-dependencies]
+# Use this for testing but unsure how to test without e2e
+tower = { version = "0.4", features = ["util"] }
+http-body-util = "0.1.2"

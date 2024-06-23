@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::sync::Arc;
 
 use axum::ServiceExt;
 use tokio::net::TcpListener;
@@ -44,4 +45,5 @@ async fn main() -> Result<(), Box<dyn Error>> {
 #[derive(Clone)]
 struct AppState {
 	rabbit_mq: RabbitMQ,
+	// user_repo: Arc<dyn >,
 }
