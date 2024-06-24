@@ -26,7 +26,7 @@
             <td><pre>
   <code>
 {
-  "personaID": "string",
+  "loaneeBankAccountNumber": "string",
   "propertyID": "string",
   "loanAmountCents": int,
   "loanDurationMonths": int,
