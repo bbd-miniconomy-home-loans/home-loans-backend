@@ -46,18 +46,40 @@ RUN cargo build \
     $(if [ "$CARGO_PROFILE" = "release" ]; then echo --release; fi)
 RUN readelf -p .comment target/release/web-server
 
+# May be quicker for distroless or smaller with scratch.
+# But All I know is what we are doing now is way better than the 500mb - 2gb file we were shipping each time.
+# https://blog.logrocket.com/optimizing-ci-cd-pipelines-rust-projects/
+#FROM gcr.io/distroless/cc-debian11
+FROM alpine:3.18.0
+
+
+# Expose the port your web server listens on
+EXPOSE 8080
+COPY --from=chef-builder /build/target/release/web-server /run
 # Create a non-root user
 RUN adduser -D rootless
 
 # Change ownership of the project directory to the new user
-RUN chown -R rootless:rootless /build
+RUN chown -R rootless:rootless /run
 
 # Switch to the non-root user
 USER rootless
 
-# Expose the port your web server listens on
-EXPOSE 8080
-RUN ls
-CMD ["./target/release/web-server"]
+CMD ["./run/web-server"]
+
+
+## Create a non-root user
+#RUN adduser -D rootless
+#
+## Change ownership of the project directory to the new user
+#RUN chown -R rootless:rootless /build
+#
+## Switch to the non-root user
+#USER rootless
+#
+## Expose the port your web server listens on
+#EXPOSE 8080
+#RUN ls
+#CMD ["./target/release/web-server"]
 # Command to run the web server
 #CMD ["cargo", "run", "--release"]
