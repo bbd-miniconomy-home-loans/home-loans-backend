@@ -2,10 +2,10 @@ name: Deploy API
 
 on:
   pull_request:
-    types:
-      - closed
+#    types:
+#      - closed
     branches:
-      - master
+#      - master
 
 jobs:
   build_api:
