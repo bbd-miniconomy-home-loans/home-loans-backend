@@ -8,4 +8,7 @@ pub enum RabbitErrorInternal {
 	MqOpenError(#[from] amqprs::error::Error),
 	#[error("Attempted to parse a number to an integer but errored out: {0}")]
 	ParseIntError(#[from] std::num::TryFromIntError),
+	#[error("Attempted to parse a number to an integer but errored out: ")]
+	TEST(),
+
 }

@@ -11,7 +11,8 @@ members = [
     "libs/lib-utils",
     "libs/lib-mq",
     "libs/lib-cron",
-    "libs/lib-intg"
+    "libs/lib-intg",
+    "libs/lib-loki"
 ]
 
 [workspace.dependencies]

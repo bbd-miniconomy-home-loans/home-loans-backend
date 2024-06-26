@@ -1,0 +1,246 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Home loans api spec",
+    "summary": "The open api spec for the home loans sections of the miniconomy",
+    "description": "Home loans api spec",
+    "version": ""
+  },
+  "paths": {
+    "/api/apply": {
+      "post": {
+        "tags": [
+          "home loan"
+        ],
+        "summary": "Requests a new home loan",
+        "description": "Requests a new home loan",
+        "operationId": "post-apply",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataResult_for_LoanApplicationResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "keys": []
+          }
+        ]
+      }
+    },
+    "/api/application_status/{application_id}": {
+      "get": {
+        "tags": [
+          "home loan"
+        ],
+        "summary": "Requests a new home loan",
+        "description": "Requests a new home loan",
+        "operationId": "get-apply",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataResult_for_LoanApplicationProcessResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "keys": []
+          }
+        ]
+      }
+    },
+    "/docs/": {
+      "get": {
+        "description": "This documentation page.",
+        "responses": {
+          "200": {
+            "description": "HTML content",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "keys": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "keys": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Auth keys i guess?"
+      }
+    },
+    "schemas": {
+      "DataResult_for_LoanApplicationProcessResult": {
+        "type": "object",
+        "required": [
+          "data",
+          "success"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LoanApplicationProcessResult"
+          },
+          "errors": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DataResult_for_LoanApplicationResult": {
+        "type": "object",
+        "required": [
+          "data",
+          "success"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LoanApplicationResult"
+          },
+          "errors": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LoanApplicationProcessResult": {
+        "type": "object",
+        "required": [
+          "application_id"
+        ],
+        "properties": {
+          "application_id": {
+            "type": "string"
+          },
+          "application_status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "LoanApplicationResult": {
+        "type": "object",
+        "properties": {
+          "application_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "LoanRequest": {
+        "type": "object",
+        "required": [
+          "candidate_credit_score",
+          "candidate_id",
+          "down_payment_amount_cents",
+          "loan_amount_cents",
+          "loan_duration_months",
+          "property_id"
+        ],
+        "properties": {
+          "candidate_credit_score": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "down_payment_amount_cents": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0
+          },
+          "loan_amount_cents": {
+            "type": "integer",
+            "format": "uint128",
+            "maximum": 100000000,
+            "minimum": 10000
+          },
+          "loan_duration_months": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 1
+          },
+          "property_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

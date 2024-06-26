@@ -1,53 +1,89 @@
-use aide::axum::IntoApiResponse;
 use axum::extract::{Json, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use axum_typed_routing::api_route;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use validator::Validate;
 
 use crate::AppState;
 
-#[derive(Serialize, Deserialize, JsonSchema, Validate)]
+#[derive(Serialize, Deserialize, JsonSchema)]
+struct LoanApplicationProcessRequest {
+	#[validate(length(min = 1, message = "Can not be empty"))]
+	application_id: String,
+}
+
+#[derive(Serialize, Deserialize, JsonSchema)]
 struct LoanRequest {
 	#[validate(length(min = 1, message = "Can not be empty"))]
-	user_id: String,
+	candidate_id: String,
 	#[validate(length(min = 1, message = "Can not be empty"))]
 	property_id: String,
-	#[validate(range(min = 0.0, message = "Must be positive"))]
-	amount_of_loan: f64,
-	#[validate(range(min = 1, message = "Must be at least 1 year"))]
-	loan_term_years: u8,
+	down_payment_amount_cents: u128,
+	#[validate(range(
+		min = 10_000.0,
+		max = 100_000_000.0,
+		message = "Must be between 1000000 and 10000000000 cents"
+	))]
+	loan_amount_cents: u128,
+	#[validate(range(min = 1, message = "Must be at least 1 month"))]
+	loan_duration_months: u8,
+	candidate_credit_score: i32,
 }
 
-#[derive(Serialize)]
-struct ErrorResponse {
-	errors: Vec<String>,
+#[derive(Serialize, Deserialize, JsonSchema)]
+struct LoanApplicationProcessResult {
+	application_status: Option<String>,
+	application_id: String,
 }
 
-#[api_route(POST "/home_loan"  {
+#[derive(Serialize, Deserialize, JsonSchema)]
+struct LoanApplicationResult {
+	application_id: Option<String>,
+}
+
+#[derive(Deserialize, Serialize, JsonSchema)]
+struct DataResult<T> where T: Serialize
+{
+	success: bool,
+	data: T,
+	errors: Option<Vec<String>>,
+}
+
+#[api_route(GET "/application_status/:application_id"  {
 summary: "Requests a new home loan",
 description: "Requests a new home loan",
-id: "post-home-loan",
+id: "get-apply",
 tags: ["home loan"],
-// responses: {200: Json < LoanRequest >, }
+responses: { 403: Json < String >}
 })]
-pub async fn home_loan_request_handler(
+pub async fn get_loan_status_request_handler(
+	application_id: String,
+	State(state): State<AppState>,
+) -> Json<DataResult<LoanApplicationProcessResult>> {
+	todo!()
+}
+
+#[api_route(POST "/apply"  {
+summary: "Requests a new home loan",
+description: "Requests a new home loan",
+id: "post-apply",
+tags: ["home loan"],
+responses: { 403: Json < String >}
+})]
+pub async fn apply_request_handler(
 	State(state): State<AppState>,
 	Json(loan_request): Json<LoanRequest>,
-) -> impl IntoApiResponse {
+) -> Json<DataResult<LoanApplicationResult>> {
 	// Validate the loan request
-	if let Err(validation_errors) = loan_request.validate() {
-		let errors: Vec<String> = validation_errors
-			.field_errors()
-			.iter()
-			.flat_map(|(_, errors)| errors.iter().map(|e| e.message.as_deref().unwrap_or("Invalid input").to_string()))
-			.collect();
-		return (StatusCode::BAD_REQUEST, Json(ErrorResponse { errors }));
-		// return format!("Validation error: {:?}", validation_errors);
-	}
+	/*	if let Err(validation_errors) = loan_request.validate() {
+			let errors: Vec<String> = validation_errors
+				.field_errors()
+				.iter()
+				.flat_map(|(_, errors)| errors.iter().map(|e| e.message.as_deref().unwrap_or("Invalid input").to_string()))
+				.collect();
+			return (StatusCode::BAD_REQUEST, Json(ErrorResponse { errors }));
+			// return format!("Validation error: {:?}", validation_errors);
+		}*/
 
 	// Create a message wrapper here and send on ->
 	let message_uuid = Uuid::new_v4();
@@ -72,9 +108,36 @@ pub async fn home_loan_request_handler(
 	//
 	// state.rabbit_mq.receive_messages_from_queue(message_uuid)
 	// Maybe create a generic api return type that will have optional data and optional error message so we dont have this error...
-	(StatusCode::OK, Json("Loan request received".to_string()))
+	todo!()
 }
 
+/*#[api_route(POST "/repayment"  {
+summary: "Calculate monthly mortgage payments",
+description: "Calculate monthly mortgage payments based on loan amount interest and duration",
+id: "post-repayment",
+tags: ["home loan"],
+// responses: {200: Json < LoanRequest >, }
+})]
+pub async fn repayment_request_handler(
+	State(state): State<AppState>,
+	Json(loan_request): Json<LoanRequest>,
+) -> impl IntoApiResponse {
+}
+
+*//*
+#[api_route(POST "/capacity"  {
+summary: "Entity capacity",
+description: "Calculates how much an entity is able to loan",
+id: "post-capacity",
+tags: ["home loan"],
+// responses: {200: Json < LoanRequest >, }
+})]
+pub async fn max_loan_request_handler(
+	State(state): State<AppState>,
+	Json(loan_request): Json<LoanRequest>,
+) -> impl IntoApiResponse {
+}
+*/
 
 #[cfg(test)]
 mod tests {
@@ -94,7 +157,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_valid_loan_request() {
 		dotenv().ok();
-		let state = AppState { rabbit_mq: RabbitMQ::new().await.unwrap() };
+		let state = AppState { /*rabbit_mq: RabbitMQ::new().await.unwrap()*/ };
 		let app = routes::init_router(state);
 		let valid_request = json!({
 			"user_id": "user123",
@@ -119,7 +182,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_invalid_loan_request() {
 		dotenv().ok();
-		let state = AppState { rabbit_mq: RabbitMQ::new().await.unwrap() };
+		let state = AppState { /*rabbit_mq: RabbitMQ::new().await.unwrap()*/ };
 		let app = routes::init_router(state);
 		let invalid_request = json!({
 			"user_id": "",
@@ -138,7 +201,5 @@ mod tests {
 		assert_eq!(response.status(), StatusCode::OK);
 		let body = response.into_body().collect().await.unwrap().to_bytes();
 		assert!(body.starts_with(b"Validation error:"));
-
-		println!("{:?}", str::from_utf8(body));
 	}
 }

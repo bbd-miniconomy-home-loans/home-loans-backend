@@ -1,0 +1,21 @@
+[package]
+name = "lib-loki"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# -- Web utils
+base64 = "0.22.1"
+url = "2.5.2"
+
+# -- Tracing
+tracing = "0.1.40"
+tracing-loki = "0.2.5"
+tracing-subscriber = { version = "0.3.18", features = ["fmt", "env-filter"] }
+
+lib-utils = { path = "../../libs/lib-utils" }
+derive_more = { workspace = true }
+serde = { version = "1.0.203", features = ["derive"] }
+serde_with = "3.8.1"
+[lints]
+workspace = true

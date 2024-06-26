@@ -7,10 +7,12 @@ edition = "2021"
 # -- App Libs
 lib-utils = { path = "../../libs/lib-utils" }
 lib-mq = { path = "../../libs/lib-mq" }
+lib-loki = { path = "../../libs/lib-loki" }
 
 # -- Tracing
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing = "0.1.40"
+tracing-loki = "0.2.5"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 
 # -- Async
 tokio = { version = "1", features = ["full"] }
@@ -27,6 +29,8 @@ axum-extra = { version = "0.9.3", features = ["typed-header"] }
 axum-server = { version = "0.6", features = ["tls-rustls"] }
 tower-http = { version = "0.5", features = ["fs", "cors", "trace"] }
 validator = { version = "0.18.1", features = ["derive"] }
+base64 = "0.22.1"
+url = "2.5.2"
 
 # -- Env
 dotenvy = "0.15.7"
