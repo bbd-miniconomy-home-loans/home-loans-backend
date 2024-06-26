@@ -1,0 +1,11 @@
+**/target/
+**/.shuttle-executables
+**/*Containerfile*
+/examples
+.git
+**/.cargo/
+**/docker/
+**/*.md
+!**/README.md
+Makefile
+/assets

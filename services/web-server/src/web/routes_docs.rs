@@ -1,6 +1,6 @@
 use aide::axum::{ApiRouter, IntoApiResponse};
 use aide::axum::routing::{get, get_with};
-use aide::openapi::OpenApi;
+use aide::openapi::{ApiKeyLocation, OpenApi};
 use aide::scalar::Scalar;
 use aide::transform::TransformOpenApi;
 use axum::{Extension, Json};
@@ -8,14 +8,13 @@ use axum::response::IntoResponse;
 
 pub(crate) fn api_docs(api: TransformOpenApi) -> TransformOpenApi {
 	api.title("Home loans api spec")
-		.summary("The open api spec for the home loans sections of the miniconomy" )
+		.summary("The open api spec for the home loans sections of the miniconomy")
 		.security_scheme(
-			"OAuth2",
-			aide::openapi::SecurityScheme::OAuth2 {
-				flows: Default::default(),
-				// location: aide::openapi::ApiKeyLocation::Header,
-				// name: "X-Auth-Key".into(),
-				description: Some("A key that is ignored.".into()),
+			"keys",
+			aide::openapi::SecurityScheme::ApiKey {
+				location: ApiKeyLocation::Header,
+				name: "Authorization".into(),
+				description: Some("Auth keys i guess?".into()),
 				extensions: Default::default(),
 			},
 		)
@@ -29,11 +28,11 @@ pub fn docs_routes() -> ApiRouter {
 			"/",
 			get_with(
 				Scalar::new("/docs/private/api.json")
-					.with_title("Aide Axum")
+					.with_title("Awesome home loans")
 					.axum_handler(),
 				|op| op.description("This documentation page."),
 			),
-			|p| p.security_requirement("OAuth2"),
+			|p| p.security_requirement("keys"),
 		)
 		.route("/private/api.json", get(serve_docs))
 		;
