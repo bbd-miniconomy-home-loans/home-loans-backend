@@ -8,6 +8,7 @@ use tokio::net::TcpListener;
 use tracing::info;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
+use tracing_subscriber::fmt::format;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -45,8 +46,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	let state = AppState { /*rabbit_mq: RabbitMQ::new().await?*/ };
 	let app = routes::init_router(state);
 
-	// let url = get_env("URL")?;
-	let listener = TcpListener::bind("0.0.0.0:8080").await?;
+	let port = get_env("SERVER_PORT")?;
+	let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await?;
 	info!("🚀 Server started successfully");
 	// info!("{:<12} - http://{:?}\n", "LISTENING", listener.local_addr()?);
 	info!("{:<12} - http://localhost:8080\n", "LISTENING");
