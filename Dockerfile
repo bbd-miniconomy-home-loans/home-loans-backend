@@ -52,7 +52,6 @@ RUN readelf -p .comment target/release/web-server
 #FROM gcr.io/distroless/cc-debian11
 FROM alpine:3.18.0
 
-
 # Expose the port your web server listens on
 EXPOSE 8080
 COPY --from=chef-builder /build/target/release/web-server /run
@@ -66,20 +65,3 @@ RUN chown -R rootless:rootless /run
 USER rootless
 
 CMD ["./run/web-server"]
-
-
-## Create a non-root user
-#RUN adduser -D rootless
-#
-## Change ownership of the project directory to the new user
-#RUN chown -R rootless:rootless /build
-#
-## Switch to the non-root user
-#USER rootless
-#
-## Expose the port your web server listens on
-#EXPOSE 8080
-#RUN ls
-#CMD ["./target/release/web-server"]
-# Command to run the web server
-#CMD ["cargo", "run", "--release"]
