@@ -67,8 +67,8 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Create New API Version
-        run: aws elasticbeanstalk create-application-version --application-name home-loans-service-env --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
-        
+        run: aws elasticbeanstalk create-application-version --application-name home-loans-service --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
+
 #--source-bundle S3Bucket="${{ inputs.account-id  }}-deploy-bucket",S3Key="deploy_package.zip"
 #      - name: upload to EBS
 #        id: upload-ebs
