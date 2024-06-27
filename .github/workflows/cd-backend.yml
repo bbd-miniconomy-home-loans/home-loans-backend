@@ -68,7 +68,7 @@ jobs:
 
 
       - name: upload to EBS
-        id: upload ebs
+        id: upload-ebs
         uses: einaregilsson/beanstalk-deploy@v22
         with:
           application_name: home-loans-service-env
