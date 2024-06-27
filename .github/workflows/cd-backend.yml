@@ -26,6 +26,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          aws-region: eu-west-1
+          role-session-name: Service_CD_GitHub_to_AWS_via_FederatedOIDC
+
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.5.0
 
@@ -55,8 +62,16 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
-          #          tags: ghcr.io/${{ github.repository_owner }}/home-loans-backend:${{ github.run_id }}
-          #          tags: ghcr.io/${{ github.repository_owner }}/home-loans-backend:latest
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+
+      - name: upload to EBS
+        id: upload ebs
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          application_name: home-loans-service-env
+          environment_name: home-loans-service-env
+          version_label: "deploy-${{ github.sha }}"
+          region: us-west-2

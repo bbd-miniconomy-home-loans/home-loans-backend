@@ -17,9 +17,7 @@ RUN find . \( \
     -name "*.toml" -or \
     -name "Cargo.lock" -or \
     -name "*.sql" -or \
-    -name "README.md" -or \
-    # Used for local TLS testing, as described in admin/README.md
-    -name "*.pem" \
+    -name "README.md" \
     \) -type f -exec install -D \{\} /build/\{\} \;
 WORKDIR /build
 # Remove patch.unused entries as they trigger unnecessary rebuilds (don't ask how long it took to write)
