@@ -29,6 +29,7 @@ mod log;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
 	// Setup out dot env environment.
+	//update ?
 	dotenvy::dotenv().ok();
 	/*let (trace_layer, watcher_task) = set_up_loki("home-loans-frontend")
 		.expect("Error setting up loki");
