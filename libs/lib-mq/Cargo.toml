@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-lib-utils = { path = "../../libs/lib-utils" }
+lib-utils = { path = "../lib-util" }
 # -- RabbitMQ compat client
 amqprs = { version = "1.6.2" }
 

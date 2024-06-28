@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	// Setup out dot env environment.
 	//update ?
 	dotenvy::dotenv().ok();
-	/*let (trace_layer, watcher_task) = set_up_loki("home-loans-frontend")
+	let (trace_layer, watcher_task) = set_up_loki("home-loans-frontend")
 		.expect("Error setting up loki");
 
 	let filter = EnvFilter::builder()
@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 		.with(trace_layer)
 		.with(tracing_subscriber::fmt::Layer::new())
 		.init();
-*/
+
 	let state = AppState { /*rabbit_mq: RabbitMQ::new().await?*/ };
 	let app = routes::init_router(state);
 
@@ -51,10 +51,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await?;
 	info!("🚀 Server started successfully");
 	// info!("{:<12} - http://{:?}\n", "LISTENING", listener.local_addr()?);
-	info!("{:<12} - http://localhost:8080\n", "LISTENING");
+	// info!("{:<12} - http://localhost:8080\n", "LISTENING");
 
 	// Spawn our watcher.
-	// tokio::spawn(watcher_task);
+	tokio::spawn(watcher_task);
 	axum::serve(listener, app.into_make_service()).await?;
 	Ok(())
 }
