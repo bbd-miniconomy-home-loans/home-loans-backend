@@ -25,9 +25,9 @@ pub fn init_router(state: AppState) -> Router {
 
 
 	ApiRouter::new()
+		.nest("/admin", internal_routes())
 		.nest("/api", api_routes())
 		.layer(middleware::map_response(mw_response_mapper))
-		.layer(middleware::from_fn(mw_auth))
 		.layer(middleware::from_fn(mw_request_stamp_resolver))
 		.nest_api_service("/docs", docs_routes())
 		.finish_api_with(&mut api, api_docs)
@@ -44,11 +44,19 @@ pub fn init_router(state: AppState) -> Router {
 		.with_state(state)
 }
 
+fn internal_routes() -> ApiRouter<AppState> {
+	ApiRouter::new()
+		.typed_api_route_with(apply_request_handler, |p| p.security_requirement("oauth"))
+		.typed_api_route_with(get_loan_status_request_handler, |p| p.security_requirement("oauth"))
+	// Middleware with auth
+	// 	.layer(middleware::from_fn(custom_mw_auth))
+}
+
 fn api_routes() -> ApiRouter<AppState> {
 	ApiRouter::new()
-
 		.typed_api_route_with(apply_request_handler, |p| p.security_requirement("keys"))
 		.typed_api_route_with(get_loan_status_request_handler, |p| p.security_requirement("keys"))
+		.layer(middleware::from_fn(mw_auth))
 }
 
 #[route(GET "/")]

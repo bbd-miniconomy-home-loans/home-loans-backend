@@ -1,0 +1,18 @@
+[package]
+name = "lib-auth"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+oauth2 = "4.4.2"
+serde = { version = "1", features = ["derive"] }
+lib-utils = { path = "../../libs/lib-utils" }
+derive_more = { workspace = true }
+thiserror = "1.0.58"
+anyhow = "1.0.82"
+reqwest = { version = "0.11.27", features = ["json"] }
+jsonwebtoken = "9.3.0"
+rand = "0.8.5"
+[lints]
+workspace = true

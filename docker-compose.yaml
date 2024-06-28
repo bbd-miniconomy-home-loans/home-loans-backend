@@ -9,20 +9,11 @@ services:
     env_file:
       - ./.env
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
+  rusty:
+    build: .
     ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-      - rabbitmq_log:/var/log/rabbitmq
-    env_file:
-      - ./.env
-    restart: unless-stopped
+      - "8080:8080"
+    env_file: .env
 
 volumes:
   progresDB:
-  rabbitmq_data:
-  rabbitmq_log:

@@ -18,6 +18,14 @@ pub(crate) fn api_docs(api: TransformOpenApi) -> TransformOpenApi {
 				extensions: Default::default(),
 			},
 		)
+		.security_scheme(
+			"oauth",
+			aide::openapi::SecurityScheme::OAuth2 {
+				flows: Default::default(),
+				description: Some("Auth keys i guess?".into()),
+				extensions: Default::default(),
+			},
+		)
 }
 
 
