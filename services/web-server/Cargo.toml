@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 # -- App Libs
 lib-utils = { path = "../../libs/lib-util" }
-lib-mq = { path = "../../libs/lib-mq" }
 lib-loki = { path = "../../libs/lib-loki" }
 
 # -- Tracing
