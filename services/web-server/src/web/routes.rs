@@ -53,7 +53,7 @@ fn internal_routes() -> ApiRouter<AppState> {
 fn api_routes() -> ApiRouter<AppState> {
 	ApiRouter::new()
 		.typed_api_route(apply_request_handler)
-	// It seems like we will be using mtls 
+	// It seems like we will be using mtls
 	// .layer(middleware::from_fn(mw_auth))
 }
 

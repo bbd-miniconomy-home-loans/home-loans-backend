@@ -1,3 +1,6 @@
+/*
+TODO: once we sort bring this back 
+
 #[tracing::instrument]
 pub async fn create_message(message_id: String, message_name: String, message_data: String, db: &sqlx::PgPool) {
 	let _ = sqlx::query!(
@@ -42,3 +45,4 @@ pub async fn delete_message(message_id: String, db: &sqlx::PgPool) {
 		.await
 		.inspect_err(|e| tracing::error!("Error while deleting message: {e}"));
 }
+*/
