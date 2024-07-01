@@ -32,15 +32,14 @@ pub(crate) fn init_router(state: AppState) -> Router {
 		.nest_api_service("/docs", docs_routes())
 		.finish_api_with(&mut api, api_docs)
 		.layer(Extension(api))
-		.typed_route(health)
 		.layer(TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
 			let matched_path = request
 				.extensions()
 				.get::<MatchedPath>()
 				.map(MatchedPath::as_str);
 			info_span!("http_request",method = ?request.method(),matched_path,)
-		})
-		)
+		}))
+		.typed_route(health)
 		.with_state(state)
 }
 
