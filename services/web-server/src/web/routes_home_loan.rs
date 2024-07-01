@@ -3,15 +3,15 @@ use axum_typed_routing::api_route;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, error};
-use tracing::field::debug;
 use uuid::Uuid;
 use validator::Validate;
 
 use lib_queue::{MessageData, MessageType, QueueTrait};
+use lib_utils::envs::get_env;
 
 use crate::AppState;
 
-#[derive(Serialize, Deserialize, JsonSchema, Validate)]
+#[derive(Serialize, Deserialize, JsonSchema, Validate, Debug)]
 struct LoanRequest {
 	#[validate(length(min = 1, message = "Can not be empty"))]
 	candidate_id: String,
@@ -20,8 +20,8 @@ struct LoanRequest {
 	loan_amount_cents: u128,
 }
 
-#[derive(Serialize, Deserialize)]
-struct LoanRequestUuid {
+#[derive(Serialize, Deserialize, Debug)]
+pub(crate) struct LoanRequestUuid {
 	id: Uuid,
 	loan_request: LoanRequest,
 }
@@ -62,8 +62,9 @@ pub async fn apply_request_handler(
 
 	let uuid = Uuid::new_v4();
 	let data = MessageData { message_type: MessageType::ADD, data: LoanRequestUuid { id: uuid, loan_request } };
-	// TODO: pull from env
-	let result = match state.sqs.send_message_to_queue(&"https://sqs.eu-west-1.amazonaws.com/434468814231/home_loan_queue".to_string(), data).await {
+	// In a perfect world, I would handle errors correctly.
+	let message_queue_url = get_env("HOME_LOAN_MESSAGE_QUEUE_URL").expect("We need message queue");
+	let result = match state.sqs.send_message_to_queue(&message_queue_url, data).await {
 		Ok(queue_id) => {
 			debug!("Added to queue {}", queue_id);
 			DataResult {
@@ -85,7 +86,7 @@ pub async fn apply_request_handler(
 	Json(result)
 }
 /*
-Tests became super difficult with traits etc. 
+Tests became super difficult with traits etc.
 #[cfg(test)]
 mod tests {
 	use axum::body::Body;

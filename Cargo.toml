@@ -13,7 +13,6 @@ members = [
     "libs/lib-loki",
     "libs/lib-auth",
     "libs/lib-sql",
-    "libs/lib-sqs",
     "libs/lib-queue"]
 
 [workspace.dependencies]

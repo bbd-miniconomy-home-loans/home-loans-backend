@@ -1,3 +1,4 @@
+use std::error;
 use derive_more::From;
 use serde_with::serde_as;
 
@@ -11,6 +12,10 @@ pub enum Error {
 	SerdeError(serde_json::Error),
 	#[from]
 	AwsError(aws_sdk_sqs::Error),
+	// #[from]
+	//It his here aws_smithy_runtime_api::client::result::SdkError, but it is not good.
+	// More for their ported stuff.
+	SmithyTypesAWSDoesNotWantUsToKnowAboutCusTheyCheat,
 
 }
 
