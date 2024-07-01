@@ -11,6 +11,7 @@ pub enum Error {
 	SerdeError(serde_json::Error),
 	#[from]
 	AwsError(aws_sdk_sqs::Error),
+
 }
 
 // region:    --- Error Boilerplate

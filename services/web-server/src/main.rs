@@ -1,20 +1,15 @@
 use std::error::Error;
-use std::process;
 use std::sync::Arc;
 
-use axum::ServiceExt;
-use base64::prelude::BASE64_STANDARD;
 use tokio::net::TcpListener;
 use tracing::info;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
-use tracing_subscriber::fmt::format;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
 use lib_loki::set_up_loki;
-use lib_mq::rabbit;
-use lib_mq::rabbit::rabbitmq::RabbitMQ;
+use lib_queue::sqs::Sqs;
 use lib_utils::envs::get_env;
 
 use crate::web::routes;
@@ -28,9 +23,9 @@ mod log;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-	// Setup out dot env environment.
-	//update ?
+	// TODO: Secrets, should we use aws to pull them from secrets manager 
 	dotenvy::dotenv().ok();
+
 	let (trace_layer, watcher_task) = set_up_loki("home-loans-frontend")
 		.expect("Error setting up loki");
 
@@ -44,7 +39,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 		.with(tracing_subscriber::fmt::Layer::new())
 		.init();
 
-	let state = AppState { /*rabbit_mq: RabbitMQ::new().await?*/ };
+	let state = AppState {
+		sqs: Arc::new(Sqs::new())
+	};
+
 	let app = routes::init_router(state);
 
 	let port = get_env("SERVER_PORT")?;
@@ -61,6 +59,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 #[derive(Clone)]
 struct AppState {
-	// rabbit_mq: RabbitMQ,
+	pub sqs: Arc<Sqs>,
 	// user_repo: Arc<dyn >,
 }

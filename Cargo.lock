@@ -1499,6 +1499,7 @@ dependencies = [
  "reqwest 0.12.5",
  "serde_json",
  "serde_with",
+ "tokio",
  "url",
  "uuid",
 ]
@@ -1522,6 +1523,7 @@ dependencies = [
 name = "lib-queue"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "aws-sdk-sqs",
  "derive_more",
  "serde",
@@ -3446,6 +3448,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5de17fd2f7da591098415cff336e12965a28061ddace43b59cb3c430179c9439"
 dependencies = [
  "getrandom",
+ "serde",
 ]
 
 [[package]]
@@ -3602,7 +3605,9 @@ dependencies = [
  "base64 0.22.1",
  "dotenvy",
  "http-body-util",
+ "lib-auth",
  "lib-loki",
+ "lib-queue",
  "lib-utils",
  "schemars",
  "serde",

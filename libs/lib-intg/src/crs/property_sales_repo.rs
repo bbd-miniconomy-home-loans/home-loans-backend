@@ -1,6 +1,6 @@
-use std::fs::File;
-
 use reqwest::{Body, Client, ClientBuilder};
+use tokio::fs::File;
+use tokio::io::AsyncReadExt;
 use uuid::Uuid;
 
 use crate::crs::error;
@@ -25,8 +25,6 @@ const PROPERTY_SALES_REPO_URL: &str = "hello convenience!";
 
 impl PropertySalesRepo {
 	async fn new() -> PropertySalesRepo {
-		
-		
 		let client_pem_file_loc = "ca/second_client.pem";
 		let mut buf = Vec::new();
 		File::open(client_pem_file_loc)
@@ -35,7 +33,7 @@ impl PropertySalesRepo {
 			.read_to_end(&mut buf)
 			.await
 			.unwrap();
-		let cert = reqwest::Certificate::from_pem(&buf)?;
+		let cert = reqwest::Certificate::from_pem(&buf).unwrap();
 
 		let client_pem_file_loc = "ca/second_client.pem";
 		let mut buf = Vec::new();
@@ -52,7 +50,7 @@ impl PropertySalesRepo {
 			.tls_built_in_root_certs(false)
 			.add_root_certificate(cert)
 			.identity(identity)
-			.https_only(true).build()?;
+			.https_only(true).build().unwrap();
 
 		PropertySalesRepo { client }
 	}
@@ -66,7 +64,7 @@ impl PropertySalesRepoTrait for PropertySalesRepo {
 		});
 		let response_data = self.client
 			.post(PROPERTY_SALES_REPO_URL)
-			.body(Body::from(data))
+			.body(Body::from(data.to_string()))
 			.send().await?
 			.text().await?;
 		Ok(response_data)

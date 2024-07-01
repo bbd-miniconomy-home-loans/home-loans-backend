@@ -12,9 +12,9 @@ use crate::web::mw_auth::mw_auth;
 use crate::web::mw_request_stamp::mw_request_stamp_resolver;
 use crate::web::mw_response_mapper::mw_response_mapper;
 use crate::web::routes_docs::{api_docs, docs_routes};
-use crate::web::routes_home_loan::{apply_request_handler, get_loan_status_request_handler};
+use crate::web::routes_home_loan::apply_request_handler;
 
-pub fn init_router(state: AppState) -> Router {
+pub(crate) fn init_router(state: AppState) -> Router {
 	let mut api = OpenApi {
 		info: Info {
 			description: Some("Home loans api spec".to_string()),
@@ -47,16 +47,14 @@ pub fn init_router(state: AppState) -> Router {
 fn internal_routes() -> ApiRouter<AppState> {
 	ApiRouter::new()
 		.typed_api_route_with(apply_request_handler, |p| p.security_requirement("oauth"))
-		.typed_api_route_with(get_loan_status_request_handler, |p| p.security_requirement("oauth"))
-	// Middleware with auth
-	// 	.layer(middleware::from_fn(custom_mw_auth))
+		.layer(middleware::from_fn(mw_auth))
 }
 
 fn api_routes() -> ApiRouter<AppState> {
 	ApiRouter::new()
-		.typed_api_route_with(apply_request_handler, |p| p.security_requirement("keys"))
-		.typed_api_route_with(get_loan_status_request_handler, |p| p.security_requirement("keys"))
-		.layer(middleware::from_fn(mw_auth))
+		.typed_api_route(apply_request_handler)
+	// It seems like we will be using mtls 
+	// .layer(middleware::from_fn(mw_auth))
 }
 
 #[route(GET "/")]
