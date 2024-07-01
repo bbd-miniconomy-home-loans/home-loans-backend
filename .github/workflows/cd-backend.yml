@@ -2,7 +2,7 @@ name: Docker Image CD
 
 on:
   push:
-  #   branches: [ "master" ]
+    branches: [ "master" ]
   # pull_request:
   #   branches: [ "master" ]
 
@@ -67,8 +67,9 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Create New API Version
-        run: aws elasticbeanstalk create-application-version --application-name home-loans-service --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
-
+        run: |
+          aws elasticbeanstalk create-application-version --application-name home-loans-service --version-label "deploy-${{ github.sha }}" --description "commit-sha-${{ github.sha }}"
+#          aws elasticbeanstalk update-environment --application-name home-loans-service --version-label ${{ github.sha }}
 #--source-bundle S3Bucket="${{ inputs.account-id  }}-deploy-bucket",S3Key="deploy_package.zip"
 #      - name: upload to EBS
 #        id: upload-ebs
