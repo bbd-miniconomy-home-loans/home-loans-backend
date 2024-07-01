@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 		.init();
 
 	let state = AppState {
-		sqs: Arc::new(Sqs::new())
+		sqs: Arc::new(Sqs::new().await)
 	};
 
 	let app = routes::init_router(state);

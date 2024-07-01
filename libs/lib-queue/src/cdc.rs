@@ -1,6 +1,6 @@
 /*
 TODO: once we sort bring this back 
-
+Change Data Capture
 #[tracing::instrument]
 pub async fn create_message(message_id: String, message_name: String, message_data: String, db: &sqlx::PgPool) {
 	let _ = sqlx::query!(

@@ -62,7 +62,8 @@ pub async fn apply_request_handler(
 
 	let uuid = Uuid::new_v4();
 	let data = MessageData { message_type: MessageType::ADD, data: LoanRequestUuid { id: uuid, loan_request } };
-	let result = match state.sqs.send_message_to_queue(&"url".to_string(), data).await {
+	// TODO: pull from env
+	let result = match state.sqs.send_message_to_queue(&"https://sqs.eu-west-1.amazonaws.com/434468814231/home_loan_queue".to_string(), data).await {
 		Ok(queue_id) => {
 			debug!("Added to queue {}", queue_id);
 			DataResult {

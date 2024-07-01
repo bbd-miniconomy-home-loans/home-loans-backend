@@ -1,5 +1,9 @@
+use std::env;
+
 use async_trait::async_trait;
+use aws_config::meta::region::RegionProviderChain;
 use aws_sdk_sqs::Client;
+use aws_sdk_sqs::config::{BehaviorVersion, Region};
 use serde::Serialize;
 
 use crate::{MessageData, QueueTrait};
@@ -11,9 +15,17 @@ pub struct Sqs {
 
 impl Sqs
 {
-	pub fn new() -> Sqs {
+	pub async fn new() -> Sqs {
+		let provider = RegionProviderChain::first_try(env::var("REGION")
+			.ok().map(Region::new))
+			.or_else(Region::new("eu-west-1"));
+
+		let config = aws_config::defaults(BehaviorVersion::latest())
+			.region(provider)
+			.load().await;
+
 		Sqs {
-			aws_client: todo!(),
+			aws_client: Client::new(&config),
 		}
 	}
 }
