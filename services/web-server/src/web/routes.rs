@@ -12,9 +12,9 @@ use crate::web::mw_auth::mw_auth;
 use crate::web::mw_request_stamp::mw_request_stamp_resolver;
 use crate::web::mw_response_mapper::mw_response_mapper;
 use crate::web::routes_docs::{api_docs, docs_routes};
-use crate::web::routes_home_loan::{apply_request_handler, get_loan_status_request_handler};
+use crate::web::routes_home_loan::apply_request_handler;
 
-pub fn init_router(state: AppState) -> Router {
+pub(crate) fn init_router(state: AppState) -> Router {
 	let mut api = OpenApi {
 		info: Info {
 			description: Some("Home loans api spec".to_string()),
@@ -25,9 +25,9 @@ pub fn init_router(state: AppState) -> Router {
 
 
 	ApiRouter::new()
+		.nest("/admin", internal_routes())
 		.nest("/api", api_routes())
 		.layer(middleware::map_response(mw_response_mapper))
-		.layer(middleware::from_fn(mw_auth))
 		.layer(middleware::from_fn(mw_request_stamp_resolver))
 		.nest_api_service("/docs", docs_routes())
 		.finish_api_with(&mut api, api_docs)
@@ -44,11 +44,17 @@ pub fn init_router(state: AppState) -> Router {
 		.with_state(state)
 }
 
+fn internal_routes() -> ApiRouter<AppState> {
+	ApiRouter::new()
+		.typed_api_route_with(apply_request_handler, |p| p.security_requirement("oauth"))
+		.layer(middleware::from_fn(mw_auth))
+}
+
 fn api_routes() -> ApiRouter<AppState> {
 	ApiRouter::new()
-
-		.typed_api_route_with(apply_request_handler, |p| p.security_requirement("keys"))
-		.typed_api_route_with(get_loan_status_request_handler, |p| p.security_requirement("keys"))
+		.typed_api_route(apply_request_handler)
+	// It seems like we will be using mtls
+	// .layer(middleware::from_fn(mw_auth))
 }
 
 #[route(GET "/")]

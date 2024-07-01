@@ -8,12 +8,13 @@ members = [
     #    -- Application Services
     "services/web-server",
     #    -- Application Libraries
-    "libs/lib-utils",
-    "libs/lib-mq",
-    "libs/lib-cron",
+    "libs/lib-util",
     "libs/lib-intg",
-    "libs/lib-loki"
-]
+    "libs/lib-loki",
+    "libs/lib-auth",
+    "libs/lib-sql",
+    "libs/lib-sqs",
+    "libs/lib-queue"]
 
 [workspace.dependencies]
 derive_more = { version = "1.0.0-beta", features = ["from", "display"] }

@@ -23,6 +23,7 @@ pub async fn mw_auth(
 		.and_then(|auth_str| auth_str.strip_prefix("Bearer ").map(|token| token.to_owned()))
 		.ok_or_else(|| TokenNotInHeaders);
 	// TODO: Something with the token.
+	
 	debug!("We should be doing something with auth here");
 	if access_token.is_err() {
 		// TODO: no auth

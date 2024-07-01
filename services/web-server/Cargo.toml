@@ -5,9 +5,10 @@ edition = "2021"
 
 [dependencies]
 # -- App Libs
-lib-utils = { path = "../../libs/lib-utils" }
-lib-mq = { path = "../../libs/lib-mq" }
+lib-utils = { path = "../../libs/lib-util" }
+lib-auth = { path = "../../libs/lib-auth" }
 lib-loki = { path = "../../libs/lib-loki" }
+lib-queue = { path = "../../libs/lib-queue" }
 
 # -- Tracing
 tracing = "0.1.40"
@@ -41,7 +42,7 @@ schemars = "0.8.19"
 axum-typed-routing = { version = "0.2.1", features = ["aide"] }
 
 # --Util stuff
-uuid = { version = "1.8.0", features = ["v4"] }
+uuid = { version = "1.8.0", features = ["v4", "serde"] }
 time = "0.3.36"
 
 # -- Errors
