@@ -13,6 +13,7 @@ sqlx = { version = "0.7", features = ["macros", "runtime-tokio", "postgres", "uu
 tracing = "0.1.40"
 async-trait = "0.1.80"
 aws-config = "1.5.3"
+aws-smithy-runtime-api = "1.7.0"
 
 [lints]
 workspace = true

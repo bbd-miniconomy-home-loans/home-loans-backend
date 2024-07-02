@@ -1,7 +1,6 @@
 use axum::http::{Method, Uri};
-use axum::response::{IntoResponse, Response};
+use axum::response::Response;
 use tracing::debug;
-use uuid::Uuid;
 
 use crate::log::log_request;
 use crate::web::mw_request_stamp::RequestStamp;

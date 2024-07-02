@@ -9,6 +9,7 @@ lib-utils = { path = "../../libs/lib-util" }
 lib-auth = { path = "../../libs/lib-auth" }
 lib-loki = { path = "../../libs/lib-loki" }
 lib-queue = { path = "../../libs/lib-queue" }
+lib-intg = { path = "../../libs/lib-intg" }
 
 # -- Tracing
 tracing = "0.1.40"
@@ -48,6 +49,8 @@ time = "0.3.36"
 # -- Errors
 thiserror = "1.0.61"
 
+# -- SQL Idealy this would be in a lib but hey yolo.
+sqlx = "0.7.4"
 
 [dev-dependencies]
 # Use this for testing but unsure how to test without e2e
