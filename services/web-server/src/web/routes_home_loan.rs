@@ -12,7 +12,7 @@ use lib_utils::envs::get_env;
 use crate::AppState;
 
 #[derive(Serialize, Deserialize, JsonSchema, Validate, Debug)]
-struct LoanRequest {
+pub struct LoanRequest {
 	#[validate(length(min = 1, message = "Can not be empty"))]
 	candidate_id: String,
 	#[validate(length(min = 1, message = "Can not be empty"))]

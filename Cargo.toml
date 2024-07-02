@@ -13,7 +13,8 @@ members = [
     "libs/lib-loki",
     "libs/lib-auth",
     "libs/lib-sql",
-    "libs/lib-queue"]
+    "libs/lib-queue"
+]
 
 [workspace.dependencies]
 derive_more = { version = "1.0.0-beta", features = ["from", "display"] }

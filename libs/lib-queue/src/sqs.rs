@@ -18,7 +18,7 @@ pub struct Sqs {
 	aws_client: Client,
 }
 
-impl<'a> Sqs
+impl Sqs
 {
 	pub async fn new() -> Sqs {
 		let provider = RegionProviderChain::first_try(env::var("REGION")
