@@ -1,6 +1,8 @@
 use std::error::Error;
 use std::sync::Arc;
 
+use sqlx::{Pool, Postgres};
+use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tracing::info;
 use tracing::level_filters::LevelFilter;
@@ -42,9 +44,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
 		.with(tracing_subscriber::fmt::Layer::new())
 		.init();
 
+	let database_url = get_env("DATABASE_URL")?;
+	let db = PgPoolOptions::new()
+		.max_connections(20)
+		.connect(&database_url)
+		.await?;
+	// sqlx::migrate!().run(&db).await?;
+
+
 	let state = AppState {
 		sqs: Arc::new(Sqs::new().await),
 		prop_repo: Arc::new(InMemoryRepo(PropertyInMemoryRepo {})),
+		db: Arc::new(db),
 	};
 
 	let app = routes::init_router(state.clone());
@@ -67,8 +78,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 					debug!("Receive message from queue");
 					let x = message_data.data.id;
 					app_state.prop_repo.send_status(x, true).await;
-					
-					
+
+
 					app_state.sqs.delete_message_from_queue(&message_queue_url, queue_message_handle).await.unwrap();
 				}
 			}).await.unwrap();
@@ -84,5 +95,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 struct AppState {
 	pub sqs: Arc<Sqs>,
 	pub prop_repo: Arc<PropertySalesRepoEnum>,
+	pub db: Arc<Pool<Postgres>>,
 	// user_repo: Arc<dyn >,
 }
