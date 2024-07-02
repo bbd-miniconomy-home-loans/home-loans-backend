@@ -22,8 +22,8 @@ struct LoanRequest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct LoanRequestUuid {
-	id: Uuid,
-	loan_request: LoanRequest,
+	pub id: Uuid,
+	pub loan_request: LoanRequest,
 }
 
 

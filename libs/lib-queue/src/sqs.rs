@@ -85,7 +85,7 @@ impl QueueTrait for Sqs {
 						None
 					}
 				}
-			}).for_each(|(receipt_handle, packaged_message)| receive_func((receipt_handle, packaged_message)));
+			}).for_each(|(receipt_handle, packaged_message)| { receive_func((receipt_handle, packaged_message)); });
 		}
 		Ok(())
 	}

@@ -9,6 +9,7 @@ lib-utils = { path = "../../libs/lib-util" }
 lib-auth = { path = "../../libs/lib-auth" }
 lib-loki = { path = "../../libs/lib-loki" }
 lib-queue = { path = "../../libs/lib-queue" }
+lib-intg = { path = "../../libs/lib-intg" }
 
 # -- Tracing
 tracing = "0.1.40"
