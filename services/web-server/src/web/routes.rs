@@ -15,52 +15,48 @@ use crate::web::routes_docs::{api_docs, docs_routes};
 use crate::web::routes_home_loan::{apply_request_handler, get_personas_handler};
 
 pub(crate) fn init_router(state: AppState) -> Router {
-	let mut api = OpenApi {
-		info: Info {
-			description: Some("Home loans api spec".to_string()),
-			..Info::default()
-		},
-		..OpenApi::default()
-	};
+    let mut api = OpenApi {
+        info: Info {
+            description: Some("Home loans api spec".to_string()),
+            ..Info::default()
+        },
+        ..OpenApi::default()
+    };
 
 
-	ApiRouter::new()
-		.nest("/admin", internal_routes())
-		.nest("/api", api_routes())
-		.layer(middleware::map_response(mw_response_mapper))
-		.layer(middleware::from_fn(mw_request_stamp_resolver))
-		.nest_api_service("/docs", docs_routes())
-		.finish_api_with(&mut api, api_docs)
-		.layer(Extension(api))
-		.layer(TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
-			let matched_path = request
-				.extensions()
-				.get::<MatchedPath>()
-				.map(MatchedPath::as_str);
-			info_span!("http_request",method = ?request.method(),matched_path,)
-		}))
-		.typed_route(health)
-		.with_state(state)
+    ApiRouter::new()
+        .nest("/admin", internal_routes())
+        .nest("/api", api_routes())
+        .layer(middleware::map_response(mw_response_mapper))
+        .layer(middleware::from_fn(mw_request_stamp_resolver))
+        .nest_api_service("/docs", docs_routes())
+        .finish_api_with(&mut api, api_docs)
+        .layer(Extension(api))
+        .layer(TraceLayer::new_for_http().make_span_with(|request: &Request<_>| {
+            let matched_path = request
+                .extensions()
+                .get::<MatchedPath>()
+                .map(MatchedPath::as_str);
+            info_span!("http_request",method = ?request.method(),matched_path,)
+        }))
+        .typed_route(health)
+        .with_state(state)
 }
 
 fn internal_routes() -> ApiRouter<AppState> {
-	ApiRouter::new()
-	.typed_api_route(get_personas_handler)
-	.typed_api_route_with(apply_request_handler, |p| p.security_requirement("oauth"))
-	.layer(middleware::from_fn(mw_auth))
+    ApiRouter::new()
+        .typed_api_route_with(get_personas_handler, |p| p.security_requirement("oauth"))
+        .layer(middleware::from_fn(mw_auth))
 }
 
-// TODO: configure mTLS
 fn api_routes() -> ApiRouter<AppState> {
-	ApiRouter::new()
-		.typed_api_route(apply_request_handler)
-	// It seems like we will be using mtls
-	// .layer(middleware::from_fn(mw_auth))
+    ApiRouter::new()
+        .typed_api_route(apply_request_handler)
 }
 
 #[route(GET "/")]
 pub async fn health(
-	State(_state): State<AppState>,
+    State(_state): State<AppState>,
 ) -> String {
-	"<OK>".to_string()
+    "<OK>".to_string()
 }

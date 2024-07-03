@@ -1,18 +1,9 @@
-use std::{env, fs};
 use std::error::Error;
-use std::fs::File;
-use std::io::{BufReader, Cursor};
-use std::os::raw::c_long;
 use std::sync::Arc;
 
-use aws_config::{BehaviorVersion, Region, SdkConfig};
-use aws_config::meta::region::RegionProviderChain;
 use reqwest::ClientBuilder;
 use reqwest::header::HeaderMap;
-use rustls::internal::msgs::handshake::CertificateChain;
-// mod log;
-use rustls::RootCertStore;
-use sqlx::{Pool, Postgres};
+use sqlx::{Pool, Postgres, query, query_as};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
 use tokio::net::TcpListener;
 use tracing::{error, info};
@@ -23,24 +14,21 @@ use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use uuid::Uuid;
-use x509_parser::nom::Parser;
-use x509_parser::pem::Pem;
-use lib_intg::repos::commercial_bank_repo::{CommercialBankRepoEnum, CommercialInMemoryRepo, CommercialRepo, CommercialRepoTrait};
-use lib_intg::repos::commercial_bank_repo::CommercialBankRepoEnum::{CommercialInMemoryRepoE, CommercialRepoE};
 
-use lib_intg::repos::property_sales_repo::{PropertyInMemoryRepo, PropertySalesRepo, PropertySalesRepoEnum, PropertySalesRepoTrait};
-use lib_intg::repos::property_sales_repo::PropertySalesRepoEnum::{InMemoryRepo, PropertySalesRepoR};
-use lib_intg::repos::retail_bank_repo::{RetailBankInMemoryRepo, RetailBankRepoEnum, RetailBankRepoTrait, RetailBankSalesRepo};
-use lib_intg::repos::retail_bank_repo::RetailBankRepoEnum::{RetailInMemoryRepoE, RetailSalesRepoE};
-use lib_intg::repos::stock_exchange_repo::{StockExchangeRepo, StockExchangeRepoEnum, StockExchangeRepoInMemoryRepo};
-use lib_intg::repos::stock_exchange_repo::StockExchangeRepoEnum::{StockExchangeInMemoryRepoE, StockExchangeRepoE};
-use lib_intg::repos::tax_repo::{TaxInMemoryRepo, TaxRepo, TaxRepoEnum};
-use lib_intg::repos::tax_repo::TaxRepoEnum::{TaxInMemoryRepoE, TaxRepoR};
+use lib_intg::repos::commercial_bank_repo::CommercialBankRepoEnum;
+use lib_intg::repos::commercial_bank_repo::CommercialRepo;
+use lib_intg::repos::commercial_bank_repo::CommercialRepoTrait;
+use lib_intg::repos::commercial_bank_repo::CommercialBankRepoEnum::CommercialRepoE;
+use lib_intg::repos::property_sales_repo::PropertySalesRepo;
+use lib_intg::repos::property_sales_repo::PropertySalesRepoEnum;
+use lib_intg::repos::property_sales_repo::PropertySalesRepoTrait;
+use lib_intg::repos::property_sales_repo::PropertySalesRepoEnum::PropertySalesRepoE;
+use lib_intg::repos::retail_bank_repo::{RetailBankRepoEnum, RetailBankRepoTrait, RetailBankSalesRepo};
+use lib_intg::repos::retail_bank_repo::RetailBankRepoEnum::RetailSalesRepoE;
 use lib_loki::set_up_loki;
 use lib_queue::{MessageData, QueueTrait};
 use lib_queue::sqs::Sqs;
 use lib_utils::envs::get_env;
-
 use web::models::LoanRequestUuid;
 
 use crate::web::routes;
@@ -56,26 +44,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .expect("Error setting up loki");
     setup_logging(trace_layer);
     let db = setup_db().await?;
-    let config = setup_aws_config().await;
-
-    /* sqlx::migrate!("migrations")
-         .run(&db)
-         .await?;*/
-    /*let client = aws_sdk_s3::Client::new(&config);
-    let resp = client.get_object().bucket("miniconomy-trust-store-bucket").key("").send().await?;
-    let data = resp.body.collect().await?.into_bytes();
-    let cert_content = String::from_utf8_lossy(&data);*/
-
-
-    /*   let x = "";
-       let mut cursor = Cursor::new(&x);
-       let (pem, _) = Pem::read(&mut cursor)?;
-       let result = pem.parse_x509().unwrap();
-       let x1 = result.verify_signature(None);
-       println!("{}", result.subject().to_string());
-       println!("{:?}", x1);*/
-
-    // let cert_bytes = decode(cert_string)?;
 
     let mut map = HeaderMap::new();
     map.insert("X-Origin", "home_loans".parse()?);
@@ -89,9 +57,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let state = AppState {
         sqs: Arc::new(Sqs::new().await),
-        prop_repo: Arc::new(PropertySalesRepoR(PropertySalesRepo { client: arc.clone() })),
-        tax_repo: Arc::new(TaxRepoR(TaxRepo { client: arc.clone() })),
-        stock_exchange_repo: Arc::new(StockExchangeRepoE(StockExchangeRepo { client: arc.clone() })),
+        prop_repo: Arc::new(PropertySalesRepoE(PropertySalesRepo { client: arc.clone() })),
         retail_bank_repo: Arc::new(RetailSalesRepoE(RetailBankSalesRepo { client: arc.clone() })),
         commercial_bank_repo: Arc::new(CommercialRepoE(CommercialRepo { client: arc.clone() })),
         db,
@@ -104,25 +70,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     info!("🚀 Server started successfully");
     debug!("{:<12} - http://{:?}\n", "LISTENING", listener.local_addr()?);
-    state.clone().retail_bank_repo.send_status(Uuid::default(), true).await.expect("TODO: panic message");
 
     setup_sqs_handler(state);
-
     // Spawn our watcher.
     tokio::spawn(watcher_task);
     axum::serve(listener, app.into_make_service()).await?;
     Ok(())
 }
-
-async fn setup_aws_config() -> SdkConfig {
-    let provider = RegionProviderChain::first_try(Region::new("eu-west-1"))
-        .or_else(Region::new("eu-west-1"));
-    let config = aws_config::defaults(BehaviorVersion::latest())
-        .region(provider)
-        .load().await;
-    config
-}
-
 
 fn setup_sqs_handler(state: AppState) {
     // Spawn our home loan queue, ideally this would be extracted to different package,
@@ -139,10 +93,9 @@ fn setup_sqs_handler(state: AppState) {
                     debug!("Receive message from queue");
                     let data_uuid = message_data.data.id;
                     let loan_request = message_data.data.loan_request;
-                    // -> check if works
-                    let result = app_state.commercial_bank_repo.request_balance().await;
+                    let our_account = app_state.commercial_bank_repo.request_balance().await;
 
-                    if result.is_err() {
+                    if our_account.is_err() {
                         error!("We have error from com bank ");
                         if app_state.prop_repo.send_status(data_uuid, false).await.is_err() {
                             error!("We have error property");
@@ -150,7 +103,8 @@ fn setup_sqs_handler(state: AppState) {
                         return;
                     }
                     // Cool to unwrap here sorted above. 
-                    let our_balance = result.unwrap().data.account_balance;
+                    let our_account = our_account.unwrap().data;
+                    let our_balance = our_account.account_balance;
 
                     if loan_request.loan_amount_cents > our_balance {
                         error!("Loan amount is too big.");
@@ -160,14 +114,29 @@ fn setup_sqs_handler(state: AppState) {
                         return;
                     }
 
+                    if app_state.commercial_bank_repo.send_transaction(loan_request.loan_amount_cents, loan_request.candidate_id, our_account.account_name).await.is_err()
+                    {
+                        error!("Commercial bank repo failed ");
+                    }
 
-                    // create debit order
-                    
-                    
-                    
-                    // app_state.prop_repo.send_status(loan_reques, true).await.expect("TODO: panic message");
-                    // app_state.retail_repo.send_status(loan_reques, true).await.expect("TODO: panic message");
+                    let insert_query = query("INSERT INTO persona(persona_id, is_active, created_at) VALUES ($1, true, CURRENT_TIMESTAMP)").bind(&loan_request.candidate_id);
+                    if insert_query.execute(&app_state.db).await.is_err() {
+                        error!("Unable to insert into db");
+                    };
+                    let insert_query = query("INSERT INTO loan (persona_id, loan_amount_cents, installment_amount_cents, loan_status, interest_rate, approval_date, created_at) VALUES ($1, $2, $3, 'approved', $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)")
+                        .bind(&loan_request.candidate_id)
+                        .bind(&loan_request.loan_amount_cents)
+                        .bind(&loan_request.loan_amount_cents / 24)
+                        .bind(5)
+                        ;
+                    if insert_query.execute(&app_state.db).await.is_err() {
+                        error!("Unable to insert loan into db");
+                    };
+
                     app_state.sqs.delete_message_from_queue(&message_queue_url, queue_message_handle).await.unwrap();
+                    if app_state.prop_repo.send_status(data_uuid, true).await.is_err() {
+                        error!("We have error property");
+                    }
                 }
             }).await.unwrap();
         }
@@ -210,10 +179,7 @@ async fn setup_db() -> Result<Pool<Postgres>, Box<dyn Error>> {
 struct AppState {
     pub sqs: Arc<Sqs>,
     pub prop_repo: Arc<PropertySalesRepoEnum>,
-    pub tax_repo: Arc<TaxRepoEnum>,
-    pub stock_exchange_repo: Arc<StockExchangeRepoEnum>,
     pub retail_bank_repo: Arc<RetailBankRepoEnum>,
     pub commercial_bank_repo: Arc<CommercialBankRepoEnum>,
     pub db: Pool<Postgres>,
-    // user_repo: Arc<dyn >,
 }
