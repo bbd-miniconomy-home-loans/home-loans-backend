@@ -1,62 +1,65 @@
+use std::convert::identity;
+use std::fs;
 use std::sync::Arc;
 use async_trait::async_trait;
-use reqwest::{Body, Client, ClientBuilder};
+use reqwest::{Body, Certificate, Client, ClientBuilder, Identity, RequestBuilder};
 use serde_with::serde_as;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 use uuid::Uuid;
+use log::trace;
 
 use crate::repos::error;
 
-pub enum PropertySalesRepoEnum {
-    InMemoryRepo(PropertyInMemoryRepo),
-    PropertySalesRepoR(PropertySalesRepo),
+pub enum RetailBankRepoEnum {
+    RetailInMemoryRepoE(RetailBankInMemoryRepo),
+    RetailSalesRepoE(RetailBankSalesRepo),
 }
 
 #[async_trait]
-impl PropertySalesRepoTrait for PropertySalesRepoEnum {
+impl RetailBankRepoTrait for RetailBankRepoEnum {
     async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
         match self {
-            PropertySalesRepoEnum::InMemoryRepo(repo) => repo.send_status(home_loan_id, approved).await,
-            PropertySalesRepoEnum::PropertySalesRepoR(repo) => repo.send_status(home_loan_id, approved).await,
+            RetailBankRepoEnum::RetailInMemoryRepoE(repo) => repo.send_status(home_loan_id, approved).await,
+            RetailBankRepoEnum::RetailSalesRepoE(repo) => repo.send_status(home_loan_id, approved).await,
         }
     }
 }
 
 
 #[async_trait]
-pub trait PropertySalesRepoTrait: Send + Sync {
+pub trait RetailBankRepoTrait: Send + Sync {
     async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String>;
 }
 
-pub struct PropertyInMemoryRepo {}
+pub struct RetailBankInMemoryRepo {}
 
 #[async_trait]
-impl PropertySalesRepoTrait for PropertyInMemoryRepo {
+impl RetailBankRepoTrait for RetailBankInMemoryRepo {
     async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
         Ok("Ok".to_string())
     }
 }
 
-pub struct PropertySalesRepo {
+pub struct RetailBankSalesRepo {
     pub client: Arc<Client>,
 }
 
-const PROPERTY_SALES_REPO_URL: &str = "hello convenience!";
-
+const RETAIL_BANK_REPO_URL: &str = "https://api.commercialbank.projects.bbdgrad.com/";
 
 #[async_trait]
-impl PropertySalesRepoTrait for PropertySalesRepo {
+impl RetailBankRepoTrait for RetailBankSalesRepo {
     async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
         let data = serde_json::json!({
 		    "loanId": home_loan_id,
 		    "approved": approved,
 		});
         let response_data = self.client
-            .post(PROPERTY_SALES_REPO_URL)
+            .post(RETAIL_BANK_REPO_URL)
             .body(Body::from(data.to_string()))
             .send().await?
             .text().await?;
+        trace!("We have got data from {}" ,response_data);
         Ok(response_data)
     }
 }

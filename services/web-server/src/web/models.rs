@@ -5,35 +5,37 @@ use validator::Validate;
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema, sqlx::Type)]
 #[sqlx(type_name = "loan_status_enum")]
-#[sqlx(rename_all = "lowercase")] 
+#[sqlx(rename_all = "lowercase")]
 pub enum LoanStatus {
-	Pending, 
-	Approved, 
-	Rejected, 
+	Pending,
+	Approved,
+	Rejected,
 	Completed
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Validate, Debug)]
 pub struct LoanRequest {
-	#[validate(length(min = 1, message = "Can not be empty"))]
-	pub candidate_id: String,
-	#[validate(length(min = 1, message = "Can not be empty"))]
-	pub property_id: String,
-	pub loan_amount_cents: u128,
+    #[validate(length(min = 1, message = "Can not be empty"))]
+    pub candidate_id: String,
+    #[validate(length(min = 1, message = "Can not be empty"))]
+    pub property_id: String,
+    pub loan_amount_cents: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct LoanRequestUuid {
-	pub id: Uuid,
-	pub loan_request: LoanRequest,
+    pub id: Uuid,
+    pub loan_request: LoanRequest,
 }
 
 #[derive(Deserialize, Serialize, JsonSchema)]
-pub struct DataResult<T> where T: Serialize
+pub struct DataResult<T>
+where
+    T: Serialize,
 {
-	pub success: bool,
-	pub data: Option<T>,
-	pub errors: Option<Vec<String>>,
+    pub success: bool,
+    pub data: Option<T>,
+    pub errors: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Serialize, JsonSchema, sqlx::FromRow)]
@@ -48,6 +50,6 @@ pub struct PersonaDetails {
 pub struct PersonaResult {
 	pub success: bool,
 	pub data: Option<Vec<PersonaDetails>>,
-	pub errors: Option<String>,
-	pub flex: String
+    pub errors: Option<String>,
+    pub flex: String
 }
