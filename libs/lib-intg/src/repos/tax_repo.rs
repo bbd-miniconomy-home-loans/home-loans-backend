@@ -1,43 +1,46 @@
-use std::collections::HashMap;
-use std::error::Error;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use async_trait::async_trait;
+use reqwest::Client;
 
-use reqwest::{Client, ClientBuilder};
 
+const TAX_REPO_URL: &str = "https://api.tax.projects.bbdgrad.com";
+
+pub enum TaxRepoEnum {
+    TaxInMemoryRepoE(TaxInMemoryRepo),
+    TaxRepoR(TaxRepo),
+}
+
+#[async_trait]
+impl TaxRepoTrait for TaxRepoEnum {
+    async fn pay_tax(&self) -> bool {
+        match self {
+            TaxRepoEnum::TaxInMemoryRepoE(r) => r.pay_tax().await,
+            TaxRepoEnum::TaxRepoR(r) => r.pay_tax().await
+        }
+    }
+}
+
+#[async_trait]
 pub trait TaxRepoTrait: Send + Sync {
-	fn send_property_tax(&self, user_id: String, property_id: String, amount_of_loan: f64) -> bool;
+    async fn pay_tax(&self) -> bool;
 }
 
+pub struct TaxInMemoryRepo {}
 
-#[derive(Debug, Clone, Default)]
-pub struct InMemoryTaxRepo {
-	map: Arc<Mutex<HashMap<String, String>>>,
+#[async_trait]
+impl TaxRepoTrait for TaxInMemoryRepo {
+    async fn pay_tax(&self) -> bool {
+        true
+    }
 }
 
-impl TaxRepoTrait for InMemoryTaxRepo {
-	fn send_property_tax(&self, user_id: String, property_id: String, amount_of_loan: f64) -> bool {
-		todo!()
-	}
-}
-
-#[derive(Debug, Clone)]
 pub struct TaxRepo {
-	client: Client,
+    pub client: Arc<Client>,
 }
-
-impl TaxRepo {
-	pub fn new() -> Result<TaxRepo, Box<dyn Error>> {
-		let client = ClientBuilder::new().gzip(true).build()?;
-		Ok(TaxRepo { client })
-	}
-}
-
+#[async_trait]
 impl TaxRepoTrait for TaxRepo {
-	fn send_property_tax(&self, user_id: String, property_id: String, amount_of_loan: f64) -> bool {
-		self.client.post("")
-			// .body()
-			.build().unwrap();
-		return true;
-	}
+    async fn pay_tax(&self) -> bool {
+        let result = self.client.post(TAX_REPO_URL).send().await;
+        return result.is_err();
+    }
 }
-

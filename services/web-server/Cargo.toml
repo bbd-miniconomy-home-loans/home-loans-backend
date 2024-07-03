@@ -33,7 +33,7 @@ tower-http = { version = "0.5", features = ["fs", "cors", "trace"] }
 validator = { version = "0.18.1", features = ["derive"] }
 base64 = "0.22.1"
 url = "2.5.2"
-rustls = { version = "0.23.10", features = ["read_buf", "brotli", "ring"], default-features = false }
+rustls = { version = "0.23.10", features = ["read_buf", "brotli", "ring", "tls12"], default-features = false }
 aws-sdk-s3 = "1.38.0"
 aws-config = "1.5.3"
 
@@ -57,7 +57,10 @@ sqlx = { version = "0.7", features = ["macros", "runtime-tokio", "postgres", "uu
 
 x509-parser = { version = "0.16.0", features = ["verify"] }
 crypto = "0.5.1"
-rustls-pemfile = "1.0.4"
+rustls-pemfile = "2.1.2"
+ring = "0.17.8"
+
+reqwest = { version = "0.12.5", features = ["gzip", "json", "__rustls-ring", "native-tls"] }
 
 
 [dev-dependencies]
