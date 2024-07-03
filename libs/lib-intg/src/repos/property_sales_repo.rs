@@ -10,7 +10,7 @@ use crate::repos::error;
 
 pub enum PropertySalesRepoEnum {
     InMemoryRepo(PropertyInMemoryRepo),
-    PropertySalesRepoR(PropertySalesRepo),
+    PropertySalesRepoE(PropertySalesRepo),
 }
 
 #[async_trait]
@@ -18,7 +18,7 @@ impl PropertySalesRepoTrait for PropertySalesRepoEnum {
     async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
         match self {
             PropertySalesRepoEnum::InMemoryRepo(repo) => repo.send_status(home_loan_id, approved).await,
-            PropertySalesRepoEnum::PropertySalesRepoR(repo) => repo.send_status(home_loan_id, approved).await,
+            PropertySalesRepoEnum::PropertySalesRepoE(repo) => repo.send_status(home_loan_id, approved).await,
         }
     }
 }
@@ -42,7 +42,7 @@ pub struct PropertySalesRepo {
     pub client: Arc<Client>,
 }
 
-const PROPERTY_SALES_REPO_URL: &str = "hello convenience!";
+const PROPERTY_SALES_REPO_URL: &str = "https://api.sales.projects.bbdgrad.com";
 
 
 #[async_trait]
@@ -50,10 +50,10 @@ impl PropertySalesRepoTrait for PropertySalesRepo {
     async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
         let data = serde_json::json!({
 		    "loanId": home_loan_id,
-		    "approved": approved,
+		    "isApproved": approved,
 		});
         let response_data = self.client
-            .post(PROPERTY_SALES_REPO_URL)
+            .post(format!("{PROPERTY_SALES_REPO_URL}/api/loan/update"))
             .body(Body::from(data.to_string()))
             .send().await?
             .text().await?;

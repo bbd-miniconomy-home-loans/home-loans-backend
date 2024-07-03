@@ -45,7 +45,7 @@ impl OAuthClient {
 	}
 
 	pub async fn request_client_data(&self, request_client: &Client, token: AccessToken) -> Result<User> {
-		let profile_response = request_client.get("https://discordapp.com/api/users/@me")
+		let profile_response = request_client.get("")
 			.bearer_auth(token.secret())
 			.send()
 			.await?;
@@ -56,9 +56,8 @@ impl OAuthClient {
 
 fn create_oauth_client() -> Result<BasicClient> {
 	let config = auth_config();
-	// TODO: env vars ???
-	let auth_url = "https://discord.com/oauth2/authorize".to_string();
-	let token_url = "https://discord.com/api/oauth2/token".to_string();
+	let auth_url = "".to_string();
+	let token_url = "".to_string();
 
 	let token_url = TokenUrl::new(token_url).expect("Invalid token endpoint URL");
 	let auth_url = AuthUrl::new(auth_url).expect("Invalid authorization endpoint URL");

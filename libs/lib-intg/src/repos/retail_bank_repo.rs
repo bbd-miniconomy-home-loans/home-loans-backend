@@ -18,10 +18,10 @@ pub enum RetailBankRepoEnum {
 
 #[async_trait]
 impl RetailBankRepoTrait for RetailBankRepoEnum {
-    async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
+    async fn create_debit_order(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
         match self {
-            RetailBankRepoEnum::RetailInMemoryRepoE(repo) => repo.send_status(home_loan_id, approved).await,
-            RetailBankRepoEnum::RetailSalesRepoE(repo) => repo.send_status(home_loan_id, approved).await,
+            RetailBankRepoEnum::RetailInMemoryRepoE(repo) => repo.create_debit_order(home_loan_id, approved).await,
+            RetailBankRepoEnum::RetailSalesRepoE(repo) => repo.create_debit_order(home_loan_id, approved).await,
         }
     }
 }
@@ -29,14 +29,14 @@ impl RetailBankRepoTrait for RetailBankRepoEnum {
 
 #[async_trait]
 pub trait RetailBankRepoTrait: Send + Sync {
-    async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String>;
+    async fn create_debit_order(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String>;
 }
 
 pub struct RetailBankInMemoryRepo {}
 
 #[async_trait]
 impl RetailBankRepoTrait for RetailBankInMemoryRepo {
-    async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
+    async fn create_debit_order(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
         Ok("Ok".to_string())
     }
 }
@@ -45,11 +45,11 @@ pub struct RetailBankSalesRepo {
     pub client: Arc<Client>,
 }
 
-const RETAIL_BANK_REPO_URL: &str = "https://api.commercialbank.projects.bbdgrad.com/";
+const RETAIL_BANK_REPO_URL: &str = "https://api.retailbank.projects.bbdgrad.com/";
 
 #[async_trait]
 impl RetailBankRepoTrait for RetailBankSalesRepo {
-    async fn send_status(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
+    async fn create_debit_order(&self, home_loan_id: Uuid, approved: bool) -> error::Result<String> {
         let data = serde_json::json!({
 		    "loanId": home_loan_id,
 		    "approved": approved,
