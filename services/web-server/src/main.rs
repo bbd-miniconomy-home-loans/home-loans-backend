@@ -17,21 +17,19 @@ use lib_loki::set_up_loki;
 use lib_queue::{MessageData, QueueTrait};
 use lib_queue::sqs::Sqs;
 use lib_utils::envs::get_env;
-use routes_home_loan::LoanRequestUuid;
-use web::routes_home_loan;
+
+use web::models::LoanRequestUuid;
 
 use crate::web::routes;
 
 mod web;
 mod log;
-// mod log;
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
 	dotenvy::dotenv().ok();
 
-	let (trace_layer, watcher_task) = set_up_loki("home-loans-frontend")
+	let (trace_layer, watcher_task) = set_up_loki("home-loans-backend")
 		.expect("Error setting up loki");
 
 	let filter = EnvFilter::builder()
@@ -62,32 +60,40 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 	let port = get_env("SERVER_PORT")?;
 	let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await?;
+	
 	info!("🚀 Server started successfully");
 	debug!("{:<12} - http://{:?}\n", "LISTENING", listener.local_addr()?);
+	
 	let message_queue_url = get_env("HOME_LOAN_MESSAGE_QUEUE_URL").expect("We need message queue");
+
 	// Spawn our home loan queue, ideally this would be extracted to different package,
 	// and we would have a system for multiple queues.
 	tokio::spawn({
 		// Yay, some hacks for tokio and its instance on 'static
 		let app_state = state.clone();
+
 		async move {
 			app_state.sqs.receive_message_from_queue(&message_queue_url, |(queue_message_handle, message_data): (String, MessageData<LoanRequestUuid>)| {
+				
 				let app_state = state.clone();
 				let message_queue_url = message_queue_url.clone();
+				
 				async move {
 					debug!("Receive message from queue");
 					let x = message_data.data.id;
-					app_state.prop_repo.send_status(x, true).await;
 
+					app_state.prop_repo.send_status(x, true).await;
 
 					app_state.sqs.delete_message_from_queue(&message_queue_url, queue_message_handle).await.unwrap();
 				}
 			}).await.unwrap();
 		}
 	});
+
 	// Spawn our watcher.
 	tokio::spawn(watcher_task);
 	axum::serve(listener, app.into_make_service()).await?;
+
 	Ok(())
 }
 
@@ -96,5 +102,4 @@ struct AppState {
 	pub sqs: Arc<Sqs>,
 	pub prop_repo: Arc<PropertySalesRepoEnum>,
 	pub db: Arc<Pool<Postgres>>,
-	// user_repo: Arc<dyn >,
 }
