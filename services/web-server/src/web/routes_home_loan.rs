@@ -13,8 +13,10 @@ use crate::web::models::{
 	LoanRequestUuid, 
 	LoanRequest, 
 	DataResult, 
-	Persona,
+	PersonaDetails,
+	PersonaResult
 };
+
 
 #[api_route(POST "/apply"  {
 summary: "Requests a new home loan",
@@ -67,43 +69,45 @@ pub async fn apply_request_handler(
 	Json(result)
 }
 
-// TODO: GET all personas
-// TODO: POST add persona
-// TODO: DELETE persona (update is_active)
-// TODO: PUT persona (update)
-// TODO: GET: JOIN personas JOIN loan JOIN property  
 
 #[api_route(GET "/persona" {})]
-pub async fn get_personas_handler(
+pub async fn get_personas_handler (
 	State(state): State<AppState>
-) -> Json<Persona> {
+) -> Json<PersonaResult> {
 
-	let result = Persona {
-			persona_id: 1, 
-			name: "we".to_string()
+	let query = "
+		SELECT
+			p.persona_id,
+			l.loan_status,
+			l.installment_amount_cents,
+			l.interest_rate::FLOAT4 AS interest_rate
+		FROM persona p
+		JOIN loan l ON p.persona_id = l.persona_id
+		JOIN property pr ON p.persona_id = pr.persona_id
+	";
+
+let res: Result<Vec<PersonaDetails>, sqlx::Error> = sqlx::query_as::<_, PersonaDetails>(query)
+	.fetch_all(&state.db)
+	.await;
+	 
+	let result = match res {
+		Ok(result) => {
+			PersonaResult {
+				success: true,
+				data: Some(result),
+				errors: None,
+				flex:  "Made in Rust :)".to_string()
+			}
+		}
+		Err(error) => {
+			PersonaResult {
+				success: false,
+				data: None,
+				errors: Some(format!("Error: {}", error)),
+				flex:  "Made in Rust :)".to_string()
+			}
+		}
 	};
 
 	Json(result)
 }
-
-// TODO: get endpoints for SARS
-// pub async fn sars_handler() {}
-
-// TODO: get endpoints for Labour Broker
-// TODO: GET persona salary
-// pub async fn labour_broker_handler() {}
-
-// TODO: get endpoints for Stock Exchange
-// TODO: POST list our stocks
-// TODO: GET, PUT, DELETE our stocks 
-// pub async fn stock_exchange_handler() {}
-
-// TODO: get endpoints for Commercial Bank
-// TODO: POST send money from <home_loans> to <persona>
-// TODO: GET account balance
-// TODO: GET statements/Transactions
-// pub async fn commercial_bank_handler() {}
-
-// TODO: get endpoints for Retail Bank
-// TODO: POST send money from <persona> to <home_loans>
-// pub async fn retail_bank_handler() {}

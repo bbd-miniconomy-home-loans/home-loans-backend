@@ -1,14 +1,9 @@
-use std::{env, fs};
 use std::error::Error;
-use std::fs::File;
-use std::io::{BufReader, Cursor};
 use std::sync::Arc;
 
 use aws_config::{BehaviorVersion, Region, SdkConfig};
 use aws_config::meta::region::RegionProviderChain;
-use rustls::internal::msgs::handshake::CertificateChain;
-// mod log;
-use rustls::RootCertStore;
+
 use sqlx::{Pool, Postgres};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
 use tokio::net::TcpListener;
@@ -19,7 +14,6 @@ use tracing_loki::Layer;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use x509_parser::pem::Pem;
 
 use lib_intg::repos::property_sales_repo::{PropertyInMemoryRepo, PropertySalesRepoEnum, PropertySalesRepoTrait};
 use lib_intg::repos::property_sales_repo::PropertySalesRepoEnum::InMemoryRepo;
@@ -44,40 +38,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	setup_logging(trace_layer);
 	let db = setup_db().await?;
 
-	let config = setup_aws_config().await;
-	/*let client = aws_sdk_s3::Client::new(&config);
-	let resp = client.get_object().bucket("miniconomy-trust-store-bucket").key("").send().await?;
-	let data = resp.body.collect().await?.into_bytes();
-	let cert_content = String::from_utf8_lossy(&data);*/
-
-
-	let x = "";
-	let mut cursor = Cursor::new(&x);
-	let (pem, _) = Pem::read(&mut cursor)?;
-	let result = pem.parse_x509().unwrap();
-	let x1 = result.verify_signature(None);
-	println!("{}", result.subject().to_string());
-	println!("{:?}", x1);
-
-	// let cert_bytes = decode(cert_string)?;
-
-
-	/*	let query = "
-			SELECT table_name
-			FROM information_schema.tables;
-		";
-
-		let tables: Vec<(String, )> = sqlx::query_as(query)
-			.fetch_all(&db)
-			.await?;
-
-		println!("{:?}", tables);
-	*/
 
 	let state = AppState {
 		sqs: Arc::new(Sqs::new().await),
 		prop_repo: Arc::new(InMemoryRepo(PropertyInMemoryRepo {})),
-		db: Arc::new(db),
+		db,
 	};
 
 	let app = routes::init_router(state.clone());
@@ -87,9 +52,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 	info!("🚀 Server started successfully");
 	debug!("{:<12} - http://{:?}\n", "LISTENING", listener.local_addr()?);
-
-	let message_queue_url = get_env("HOME_LOAN_MESSAGE_QUEUE_URL").expect("We need message queue");
-
 
 	setup_sqs_handler(state);
 	// Spawn our watcher.
@@ -168,6 +130,5 @@ async fn setup_db() -> Result<Pool<Postgres>, Box<dyn Error>> {
 struct AppState {
 	pub sqs: Arc<Sqs>,
 	pub prop_repo: Arc<PropertySalesRepoEnum>,
-	pub db: Arc<Pool<Postgres>>,
-	// user_repo: Arc<dyn >,
+	pub db: Pool<Postgres>,
 }
