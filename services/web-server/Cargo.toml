@@ -33,6 +33,9 @@ tower-http = { version = "0.5", features = ["fs", "cors", "trace"] }
 validator = { version = "0.18.1", features = ["derive"] }
 base64 = "0.22.1"
 url = "2.5.2"
+rustls = { version = "0.23.10", features = ["read_buf", "brotli", "ring"], default-features = false }
+aws-sdk-s3 = "1.38.0"
+aws-config = "1.5.3"
 
 # -- Env
 dotenvy = "0.15.7"
@@ -50,9 +53,15 @@ time = "0.3.36"
 thiserror = "1.0.61"
 
 # -- SQL Idealy this would be in a lib but hey yolo.
-sqlx = "0.7.4"
+sqlx = { version = "0.7", features = ["macros", "runtime-tokio", "postgres", "uuid", "tls-rustls"] }
+
+x509-parser = { version = "0.16.0", features = ["verify"] }
+crypto = "0.5.1"
+rustls-pemfile = "1.0.4"
+
 
 [dev-dependencies]
 # Use this for testing but unsure how to test without e2e
 tower = { version = "0.4", features = ["util"] }
 http-body-util = "0.1.2"
+

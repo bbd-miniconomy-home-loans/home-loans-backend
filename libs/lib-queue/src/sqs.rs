@@ -21,12 +21,12 @@ pub struct Sqs {
 impl<'a> Sqs
 {
 	pub async fn new() -> Sqs {
-		let provider = RegionProviderChain::first_try(env::var("REGION")
-			.ok().map(Region::new))
-			.or_else(Region::new("eu-west-1"));
-		let config = aws_config::defaults(BehaviorVersion::latest())
-			.region(provider)
-			.load().await;
+			let provider = RegionProviderChain::first_try(env::var("REGION")
+				.ok().map(Region::new))
+				.or_else(Region::new("eu-west-1"));
+			let config = aws_config::defaults(BehaviorVersion::latest())
+				.region(provider)
+				.load().await;
 
 		Sqs {
 			aws_client: Client::new(&config),
