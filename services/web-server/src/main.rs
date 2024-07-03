@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use reqwest::ClientBuilder;
 use reqwest::header::HeaderMap;
-use sqlx::{Pool, Postgres, query, query_as};
+use sqlx::{Pool, Postgres, query};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
 use tokio::net::TcpListener;
 use tracing::{error, info};
@@ -13,7 +13,6 @@ use tracing_loki::Layer;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use uuid::Uuid;
 
 use lib_intg::repos::commercial_bank_repo::CommercialBankRepoEnum;
 use lib_intg::repos::commercial_bank_repo::CommercialRepo;
@@ -23,7 +22,7 @@ use lib_intg::repos::property_sales_repo::PropertySalesRepo;
 use lib_intg::repos::property_sales_repo::PropertySalesRepoEnum;
 use lib_intg::repos::property_sales_repo::PropertySalesRepoTrait;
 use lib_intg::repos::property_sales_repo::PropertySalesRepoEnum::PropertySalesRepoE;
-use lib_intg::repos::retail_bank_repo::{RetailBankRepoEnum, RetailBankRepoTrait, RetailBankSalesRepo};
+use lib_intg::repos::retail_bank_repo::{RetailBankRepoEnum, RetailBankSalesRepo};
 use lib_intg::repos::retail_bank_repo::RetailBankRepoEnum::RetailSalesRepoE;
 use lib_loki::set_up_loki;
 use lib_queue::{MessageData, QueueTrait};
@@ -58,7 +57,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let state = AppState {
         sqs: Arc::new(Sqs::new().await),
         prop_repo: Arc::new(PropertySalesRepoE(PropertySalesRepo { client: arc.clone() })),
-        retail_bank_repo: Arc::new(RetailSalesRepoE(RetailBankSalesRepo { client: arc.clone() })),
+        _retail_bank_repo: Arc::new(RetailSalesRepoE(RetailBankSalesRepo { client: arc.clone() })),
         commercial_bank_repo: Arc::new(CommercialRepoE(CommercialRepo { client: arc.clone() })),
         db,
     };
@@ -114,7 +113,7 @@ fn setup_sqs_handler(state: AppState) {
                         return;
                     }
 
-                    if app_state.commercial_bank_repo.send_transaction(loan_request.loan_amount_cents, loan_request.candidate_id, our_account.account_name).await.is_err()
+                    if app_state.commercial_bank_repo.send_transaction(loan_request.loan_amount_cents.clone(), loan_request.candidate_id.clone(), our_account.account_name).await.is_err()
                     {
                         error!("Commercial bank repo failed ");
                     }
@@ -179,7 +178,7 @@ async fn setup_db() -> Result<Pool<Postgres>, Box<dyn Error>> {
 struct AppState {
     pub sqs: Arc<Sqs>,
     pub prop_repo: Arc<PropertySalesRepoEnum>,
-    pub retail_bank_repo: Arc<RetailBankRepoEnum>,
+    pub _retail_bank_repo: Arc<RetailBankRepoEnum>,
     pub commercial_bank_repo: Arc<CommercialBankRepoEnum>,
     pub db: Pool<Postgres>,
 }
