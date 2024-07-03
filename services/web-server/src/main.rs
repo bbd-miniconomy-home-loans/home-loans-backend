@@ -27,8 +27,8 @@ use lib_loki::set_up_loki;
 use lib_queue::{MessageData, QueueTrait};
 use lib_queue::sqs::Sqs;
 use lib_utils::envs::get_env;
-use routes_home_loan::LoanRequestUuid;
-use web::routes_home_loan;
+
+use web::models::LoanRequestUuid;
 
 use crate::web::routes;
 
@@ -84,8 +84,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 	let port = get_env("SERVER_PORT")?;
 	let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await?;
+
 	info!("🚀 Server started successfully");
 	debug!("{:<12} - http://{:?}\n", "LISTENING", listener.local_addr()?);
+
+	let message_queue_url = get_env("HOME_LOAN_MESSAGE_QUEUE_URL").expect("We need message queue");
+
 
 	setup_sqs_handler(state);
 	// Spawn our watcher.

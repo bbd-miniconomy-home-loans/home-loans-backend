@@ -12,7 +12,7 @@ use crate::web::mw_auth::mw_auth;
 use crate::web::mw_request_stamp::mw_request_stamp_resolver;
 use crate::web::mw_response_mapper::mw_response_mapper;
 use crate::web::routes_docs::{api_docs, docs_routes};
-use crate::web::routes_home_loan::apply_request_handler;
+use crate::web::routes_home_loan::{apply_request_handler, get_personas_handler};
 
 pub(crate) fn init_router(state: AppState) -> Router {
 	let mut api = OpenApi {
@@ -45,10 +45,12 @@ pub(crate) fn init_router(state: AppState) -> Router {
 
 fn internal_routes() -> ApiRouter<AppState> {
 	ApiRouter::new()
-		.typed_api_route_with(apply_request_handler, |p| p.security_requirement("oauth"))
-		.layer(middleware::from_fn(mw_auth))
+	.typed_api_route(get_personas_handler)
+	.typed_api_route_with(apply_request_handler, |p| p.security_requirement("oauth"))
+	.layer(middleware::from_fn(mw_auth))
 }
 
+// TODO: configure mTLS
 fn api_routes() -> ApiRouter<AppState> {
 	ApiRouter::new()
 		.typed_api_route(apply_request_handler)

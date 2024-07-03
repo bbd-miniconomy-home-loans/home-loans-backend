@@ -1,7 +1,5 @@
 use axum::extract::{Json, State};
 use axum_typed_routing::api_route;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 use tracing::{debug, error};
 use uuid::Uuid;
 use validator::Validate;
@@ -11,29 +9,12 @@ use lib_utils::envs::get_env;
 
 use crate::AppState;
 
-#[derive(Serialize, Deserialize, JsonSchema, Validate, Debug)]
-struct LoanRequest {
-	#[validate(length(min = 1, message = "Can not be empty"))]
-	candidate_id: String,
-	#[validate(length(min = 1, message = "Can not be empty"))]
-	property_id: String,
-	loan_amount_cents: u128,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub(crate) struct LoanRequestUuid {
-	pub id: Uuid,
-	pub loan_request: LoanRequest,
-}
-
-
-#[derive(Deserialize, Serialize, JsonSchema)]
-struct DataResult<T> where T: Serialize
-{
-	success: bool,
-	data: Option<T>,
-	errors: Option<Vec<String>>,
-}
+use crate::web::models::{
+	LoanRequestUuid, 
+	LoanRequest, 
+	DataResult, 
+	Persona,
+};
 
 #[api_route(POST "/apply"  {
 summary: "Requests a new home loan",
@@ -85,68 +66,44 @@ pub async fn apply_request_handler(
 
 	Json(result)
 }
-/*
-Tests became super difficult with traits etc.
-#[cfg(test)]
-mod tests {
-	use axum::body::Body;
-	use axum::http;
-	use axum::http::{Request, StatusCode};
-	use dotenvy::dotenv;
-	use http_body_util::BodyExt;
-	use serde_json::json;
-	use tower::ServiceExt;
 
-	use crate::AppState;
-	use crate::web::routes;
+// TODO: GET all personas
+// TODO: POST add persona
+// TODO: DELETE persona (update is_active)
+// TODO: PUT persona (update)
+// TODO: GET: JOIN personas JOIN loan JOIN property  
 
-	#[tokio::test]
-	async fn test_valid_loan_request() {
-		dotenv().ok();
-		let state = AppState { /*rabbit_mq: RabbitMQ::new().await.unwrap()*/ };
-		let app = routes::init_router(state);
-		let valid_request = json!({
-			"user_id": "user123",
-			"property_id": "property456",
-			"amount_of_loan": 150000.0,
-			"loan_term_years": 30
-		});
-		let response = app
-			.oneshot(Request::builder()
-				.method("POST")
-				.header(http::header::CONTENT_TYPE, "application/json")
-				.uri("/api/home_loan")
-				.body(Body::from(valid_request.to_string()))
-				.unwrap())
-			.await.unwrap();
-		assert_eq!(response.status(), StatusCode::OK);
-		let body = response.into_body().collect().await.unwrap().to_bytes();
-		assert_eq!(&body[..], b"Loan request received");
-	}
+#[api_route(GET "/persona" {})]
+pub async fn get_personas_handler(
+	State(state): State<AppState>
+) -> Json<Persona> {
 
+	let result = Persona {
+			persona_id: 1, 
+			name: "we".to_string()
+	};
 
-	#[tokio::test]
-	async fn test_invalid_loan_request() {
-		dotenv().ok();
-		let state = AppState { /*rabbit_mq: RabbitMQ::new().await.unwrap()*/ sqs: Arc::new(()) };
-		let app = routes::init_router(state);
-		let invalid_request = json!({
-			"user_id": "",
-			"property_id": "",
-			"amount_of_loan": -5000.0,
-			"loan_term_years": 0
-		});
-		let response = app
-			.oneshot(Request::builder()
-				.method("POST")
-				.header(http::header::CONTENT_TYPE, "application/json")
-				.uri("/api/home_loan")
-				.body(Body::from(invalid_request.to_string()))
-				.unwrap())
-			.await.unwrap();
-		assert_eq!(response.status(), StatusCode::OK);
-		let body = response.into_body().collect().await.unwrap().to_bytes();
-		assert!(body.starts_with(b"Validation error:"));
-	}
+	Json(result)
 }
-*/
+
+// TODO: get endpoints for SARS
+// pub async fn sars_handler() {}
+
+// TODO: get endpoints for Labour Broker
+// TODO: GET persona salary
+// pub async fn labour_broker_handler() {}
+
+// TODO: get endpoints for Stock Exchange
+// TODO: POST list our stocks
+// TODO: GET, PUT, DELETE our stocks 
+// pub async fn stock_exchange_handler() {}
+
+// TODO: get endpoints for Commercial Bank
+// TODO: POST send money from <home_loans> to <persona>
+// TODO: GET account balance
+// TODO: GET statements/Transactions
+// pub async fn commercial_bank_handler() {}
+
+// TODO: get endpoints for Retail Bank
+// TODO: POST send money from <persona> to <home_loans>
+// pub async fn retail_bank_handler() {}

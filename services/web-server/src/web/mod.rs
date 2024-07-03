@@ -8,3 +8,4 @@ pub(crate) mod mw_response_mapper;
 pub(crate) mod mw_auth_mtls;
 
 
+pub(crate) mod models;
