@@ -62,6 +62,8 @@ ring = "0.17.8"
 
 reqwest = { version = "0.12.5", features = ["gzip", "json", "__rustls-ring", "native-tls"] }
 
+# random numbers
+rand = "0.8"
 
 [dev-dependencies]
 # Use this for testing but unsure how to test without e2e

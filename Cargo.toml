@@ -17,4 +17,4 @@ members = [
 
 [workspace.dependencies]
 derive_more = { version = "1.0.0-beta", features = ["from", "display"] }
-
+rand = "0.8"

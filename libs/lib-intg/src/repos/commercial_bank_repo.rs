@@ -74,8 +74,8 @@ impl CommercialRepoTrait for CommercialRepo {
                                "debitAccountName": our_account,
                                "creditAccountName": candidate_id,
                                "amount": cents,
-                               "debitRef": "Something",
-                               "creditRef": "Something"
+                               "debitRef": format!("home_loans-{}", candidate_id),
+                               "creditRef": format!("home_loans-{}", candidate_id)
                              }
                            ]
                      });

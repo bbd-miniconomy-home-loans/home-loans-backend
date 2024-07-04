@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::sync::Arc;
 
+use lib_intg::repos::stock_exchange_repo::{StockExchangeRepo, StockExchangeRepoEnum};
 use reqwest::ClientBuilder;
 use reqwest::header::HeaderMap;
 use sqlx::{Pool, Postgres, query};
@@ -24,6 +25,7 @@ use lib_intg::repos::property_sales_repo::PropertySalesRepoTrait;
 use lib_intg::repos::property_sales_repo::PropertySalesRepoEnum::PropertySalesRepoE;
 use lib_intg::repos::retail_bank_repo::{RetailBankRepoEnum, RetailBankSalesRepo};
 use lib_intg::repos::retail_bank_repo::RetailBankRepoEnum::RetailSalesRepoE;
+use lib_intg::repos::stock_exchange_repo::StockExchangeRepoEnum::StockExchangeRepoE;
 use lib_loki::set_up_loki;
 use lib_queue::{MessageData, QueueTrait};
 use lib_queue::sqs::Sqs;
@@ -59,6 +61,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         prop_repo: Arc::new(PropertySalesRepoE(PropertySalesRepo { client: arc.clone() })),
         _retail_bank_repo: Arc::new(RetailSalesRepoE(RetailBankSalesRepo { client: arc.clone() })),
         commercial_bank_repo: Arc::new(CommercialRepoE(CommercialRepo { client: arc.clone() })),
+        stock_exchange_repo: Arc::new(StockExchangeRepoE(StockExchangeRepo { client: arc.clone() })),
         db,
     };
 
@@ -180,5 +183,6 @@ struct AppState {
     pub prop_repo: Arc<PropertySalesRepoEnum>,
     pub _retail_bank_repo: Arc<RetailBankRepoEnum>,
     pub commercial_bank_repo: Arc<CommercialBankRepoEnum>,
+    pub stock_exchange_repo: Arc<StockExchangeRepoEnum>,
     pub db: Pool<Postgres>,
 }
