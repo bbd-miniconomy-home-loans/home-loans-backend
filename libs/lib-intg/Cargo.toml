@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+rand = "0.8"
 reqwest = { version = "0.12.5", features = ["gzip", "json", "__rustls-ring", "native-tls"] }
 uuid = { version = "1.9.1", features = ["serde"] }
 derive_more = "1.0.0-beta.6"
